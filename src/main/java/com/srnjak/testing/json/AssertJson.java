@@ -18,7 +18,8 @@ public class AssertJson {
         MISSING("Missing: %s"),
         INVALID("Invalid: %s"),
         UNEXPECTED_EQUAL("Expected not equal but was: %s"),
-        NOT_CONTAINING("The expected element: %s is not part of the array: %s");
+        NOT_CONTAINING("The expected element: %s is not part of: %s"),
+        CONTAINING("The element: %s is part of: %s, but is not expected.");
 
         String message;
 
@@ -167,22 +168,9 @@ public class AssertJson {
     public static void assertContains(
             JsonValue expectedElement, JsonArray actualArray) {
 
-        Optional.ofNullable(actualArray)
-                .filter(a -> !a.isEmpty())
-                .ifPresentOrElse(
-                a -> {
-                    JsonValue expected =
-                            Optional.ofNullable(expectedElement)
-                                    .orElse(JsonValue.NULL);
-
-                    boolean contains =
-                            a.stream().anyMatch(v -> equals(expected, v));
-
-                    if (!contains) {
-                        failNotContaining(expectedElement, actualArray);
-                    }
-                },
-                () -> failNotContaining(expectedElement, actualArray));
+        if (!contains(expectedElement, actualArray)) {
+            failNotContaining(expectedElement, actualArray);
+        }
     }
 
     /**
@@ -221,6 +209,77 @@ public class AssertJson {
         assertContains(expectedElement, parseArray(actualArray));
     }
 
+    /**
+     * Verifies if an actual {@link JsonArray} does not contain an unexpected
+     * {@link JsonValue} element.
+     *
+     * @param unexpectedElement The unexpected {@link JsonValue} element
+     * @param actualArray The actual {@link JsonArray}
+     */
+    public static void assertNotContains(
+            JsonValue unexpectedElement, JsonArray actualArray) {
+
+        if (contains(unexpectedElement, actualArray)) {
+            failContaining(unexpectedElement, actualArray);
+        }
+    }
+
+    /**
+     * Verifies if an actual json array string does not contain an unexpected
+     * json element.
+     *
+     * @param unexpectedElement The unexpected json element
+     * @param actualArray The actual json array string
+     */
+    public static void assertNotContains(
+            String unexpectedElement, String actualArray) {
+        assertNotContains(parseValue(unexpectedElement), parseArray(actualArray));
+    }
+
+    /**
+     * Verifies if an actual {@link JsonArray} does not contain an unexpected
+     * json element.
+     *
+     * @param unexpectedElement The unexpected json element
+     * @param actualArray The actual {@link JsonArray}
+     */
+    public static void assertNotContains(
+            String unexpectedElement, JsonArray actualArray) {
+        assertNotContains(parseValue(unexpectedElement), actualArray);
+    }
+
+    /**
+     * Verifies if an actual json array string does not contain an unexpected
+     * {@link JsonValue} element.
+     *
+     * @param unexpectedElement The unexpected {@link JsonValue} element
+     * @param actualArray The actual json array string
+     */
+    public static void assertNotContains(
+            JsonValue unexpectedElement, String actualArray) {
+        assertNotContains(unexpectedElement, parseArray(actualArray));
+    }
+
+    /**
+     * Wether a {@link JsonArray} contains a specified
+     * {@link JsonValue} element.
+     *
+     * @param element The specified{@link JsonValue} element
+     * @param array The {@link JsonArray}
+     *
+     * @return {@code true} if contains
+     */
+    private static boolean contains(JsonValue element, JsonArray array) {
+        return Optional.ofNullable(array)
+                .filter(a -> !a.isEmpty())
+                .map(a -> {
+                    JsonValue el = Optional.ofNullable(element)
+                            .orElse(JsonValue.NULL);
+
+                    return a.stream().anyMatch(v -> equals(el, v));
+                })
+                .orElse(false);
+    }
 
     private static boolean equals(
             JsonValue jsonValue1,
@@ -337,5 +396,11 @@ public class AssertJson {
             JsonValue expectedElement, JsonArray actualArray) {
         throw new AssertionFailedError(
                 NOT_CONTAINING.message(expectedElement, actualArray));
+    }
+
+    private static void failContaining(
+            JsonValue unexpectedElement, JsonArray actualArray) {
+        throw new AssertionFailedError(
+                CONTAINING.message(unexpectedElement, actualArray));
     }
 }

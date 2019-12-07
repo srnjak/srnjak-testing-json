@@ -356,23 +356,35 @@ class AssertJsonTest {
         JsonArray arrayObjects = Generators.generateJsonArrayOfObjects();
         JsonArray arrayArrays = Generators.generateJsonArrayOfArrays();
 
-        failContains(JsonValue.NULL, null);
+        // contains
         failContains(null, null);
-
-        failContains(JsonValue.NULL, arrayEmpty);
         failContains(null, arrayEmpty);
-
-        passContains(JsonValue.NULL, arrayNull);
         passContains(null, arrayNull);
-
-        failContains(JsonValue.NULL, arrayScalars);
         failContains(null, arrayScalars);
-
-        failContains(JsonValue.NULL, arrayObjects);
         failContains(null, arrayObjects);
-
-        failContains(JsonValue.NULL, arrayArrays);
         failContains(null, arrayArrays);
+
+        failContains(JsonValue.NULL, null);
+        failContains(JsonValue.NULL, arrayEmpty);
+        passContains(JsonValue.NULL, arrayNull);
+        failContains(JsonValue.NULL, arrayScalars);
+        failContains(JsonValue.NULL, arrayObjects);
+        failContains(JsonValue.NULL, arrayArrays);
+
+        // does not contain
+        passNotContains(null, null);
+        passNotContains(null, arrayEmpty);
+        failNotContains(null, arrayNull);
+        passNotContains(null, arrayScalars);
+        passNotContains(null, arrayObjects);
+        passNotContains(null, arrayArrays);
+
+        passNotContains(JsonValue.NULL, null);
+        passNotContains(JsonValue.NULL, arrayEmpty);
+        failNotContains(JsonValue.NULL, arrayNull);
+        passNotContains(JsonValue.NULL, arrayScalars);
+        passNotContains(JsonValue.NULL, arrayObjects);
+        passNotContains(JsonValue.NULL, arrayArrays);
     }
 
     @Test
@@ -393,6 +405,7 @@ class AssertJsonTest {
                 .add(true)
                 .build();
 
+        // contains
         failContains(elementStr, null);
         failContains(elementInt, null);
         failContains(elementBoolean, null);
@@ -408,6 +421,23 @@ class AssertJsonTest {
         failContains(notElementStr, arrayScalars);
         failContains(notElementInt, arrayScalars);
         failContains(notElementBoolean, arrayScalars);
+
+        // does not contain
+        passNotContains(elementStr, null);
+        passNotContains(elementInt, null);
+        passNotContains(elementBoolean, null);
+
+        passNotContains(elementStr, arrayEmpty);
+        passNotContains(elementInt, arrayEmpty);
+        passNotContains(elementBoolean, arrayEmpty);
+
+        failNotContains(elementStr, arrayScalars);
+        failNotContains(elementInt, arrayScalars);
+        failNotContains(elementBoolean, arrayScalars);
+
+        passNotContains(notElementStr, arrayScalars);
+        passNotContains(notElementInt, arrayScalars);
+        passNotContains(notElementBoolean, arrayScalars);
     }
 
     @Test
@@ -433,10 +463,17 @@ class AssertJsonTest {
                 .add(Json.createArrayBuilder().add("ab").add("cd").build())
                 .build();
 
+        // contains
         failContains(element, null);
         failContains(element, arrayEmpty);
         passContains(element, arrayObjects);
         failContains(notElement, arrayObjects);
+
+        // does not contain
+        passNotContains(element, null);
+        passNotContains(element, arrayEmpty);
+        failNotContains(element, arrayObjects);
+        passNotContains(notElement, arrayObjects);
     }
 
     @Test
@@ -482,6 +519,7 @@ class AssertJsonTest {
                 .add(elementArrayObjects)
                 .build();
 
+        // contains
         failContains(elementArrayScalars, null);
         failContains(elementArrayObjects, null);
 
@@ -495,6 +533,21 @@ class AssertJsonTest {
         passContains(elementArrayObjects, arrayArraysObjects);
         failContains(notElementArrayObjects, arrayArraysObjects);
         failContains(elementArrayScalars, arrayArraysObjects);
+
+        // does not contain
+        passNotContains(elementArrayScalars, null);
+        passNotContains(elementArrayObjects, null);
+
+        passNotContains(elementArrayScalars, arrayEmpty);
+        passNotContains(elementArrayObjects, arrayEmpty);
+
+        failNotContains(elementArrayScalars, arrayArraysScalars);
+        passNotContains(notElementArrayScalars, arrayArraysScalars);
+        passNotContains(elementArrayObjects, arrayArraysScalars);
+
+        failNotContains(elementArrayObjects, arrayArraysObjects);
+        passNotContains(notElementArrayObjects, arrayArraysObjects);
+        passNotContains(elementArrayScalars, arrayArraysObjects);
     }
 
     private void passEquals(JsonStructure expected, JsonStructure actual) {
@@ -518,6 +571,15 @@ class AssertJsonTest {
                 stringOf(expectedElement), stringOf(actualArray));
         AssertJson.assertContains(stringOf(expectedElement), actualArray);
         AssertJson.assertContains(expectedElement, stringOf(actualArray));
+    }
+
+    private void passNotContains(
+            JsonValue expectedElement, JsonArray actualArray) {
+        AssertJson.assertNotContains(expectedElement, actualArray);
+        AssertJson.assertNotContains(
+                stringOf(expectedElement), stringOf(actualArray));
+        AssertJson.assertNotContains(stringOf(expectedElement), actualArray);
+        AssertJson.assertNotContains(expectedElement, stringOf(actualArray));
     }
 
     private void failEquals(
@@ -679,6 +741,38 @@ class AssertJsonTest {
 
         String expectedMessage =
                 NOT_CONTAINING.message(expectedElement, actualArray);
+
+        verifyFailure(e1, expectedMessage);
+        verifyFailure(e2, expectedMessage);
+        verifyFailure(e3, expectedMessage);
+        verifyFailure(e4, expectedMessage);
+    }
+
+    private void failNotContains(
+            JsonValue unexpectedElement, JsonArray actualArray) {
+
+        AssertionFailedError e1 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertNotContains(
+                        unexpectedElement, actualArray));
+
+        AssertionFailedError e2 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertNotContains(
+                        stringOf(unexpectedElement), stringOf(actualArray)));
+
+        AssertionFailedError e3 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertNotContains(
+                        stringOf(unexpectedElement), actualArray));
+
+        AssertionFailedError e4 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertNotContains(
+                        unexpectedElement, stringOf(actualArray)));
+
+        String expectedMessage =
+                CONTAINING.message(unexpectedElement, actualArray);
 
         verifyFailure(e1, expectedMessage);
         verifyFailure(e2, expectedMessage);
