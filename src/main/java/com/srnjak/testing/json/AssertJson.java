@@ -22,7 +22,8 @@ public class AssertJson {
         NOT_CONTAINING("The expected element: %s is not part of: %s"),
         CONTAINING("The element: %s is part of: %s, but is not expected."),
         NOT_CONTAINING_ALL("Expected elements %s are missing in %s"),
-        NOT_CONTAINING_ANY("Not found any of elements %s in the given %s");
+        NOT_CONTAINING_ANY("Not found any of elements %s in the given %s"),
+        CONTAINING_SOME("Found %s in the given %s, but none of them expected.");
 
         String message;
 
@@ -334,18 +335,15 @@ public class AssertJson {
     public static void assertContainsAny(
             JsonArray expectedElements, JsonArray actualArray) {
 
-        Optional.ofNullable(expectedElements)
+        boolean containsAny = Optional.ofNullable(expectedElements)
                 .filter(e -> !e.isEmpty())
-                .ifPresent(e -> {
-                    boolean found = e.stream()
-                            .anyMatch(exp -> contains(exp, actualArray));
+                .map(e -> e.stream()
+                        .anyMatch(exp -> contains(exp, actualArray)))
+                .orElse(true);
 
-                    if (actualArray == null
-                            || actualArray.isEmpty()
-                            || !found) {
-                        failNotContainingAny(expectedElements, actualArray);
-                    }
-                });
+        if (!containsAny) {
+            failNotContainingAny(expectedElements, actualArray);
+        }
     }
 
     /**
@@ -386,10 +384,68 @@ public class AssertJson {
     }
 
     /**
-     * Wether a {@link JsonArray} contains a specified
+     * Verifies if an actual {@link JsonArray} contains none of
+     * unexpected elements.
+     *
+     * @param unexpectedElements The {@link JsonArray} of unexpected elements
+     * @param actualArray The actual {@link JsonArray}
+     */
+    public static void assertContainsNone(
+            JsonArray unexpectedElements, JsonArray actualArray) {
+
+        Optional.ofNullable(unexpectedElements)
+                .filter(e -> !e.isEmpty())
+                .map(e -> e.stream()
+                        .filter(exp -> contains(exp, actualArray))
+                        .collect(Collectors.toList()))
+                .filter(l -> !l.isEmpty())
+                .ifPresent(l -> {
+                    failContainingSome(l, actualArray);
+                });
+    }
+
+    /**
+     * Verifies if an actual json array string contains none of
+     * unexpected elements.
+     *
+     * @param unexpectedElements The json array string of unexpected elements
+     * @param actualArray The actual json array string
+     */
+    public static void assertContainsNone(
+            String unexpectedElements, String actualArray) {
+        assertContainsNone(
+                parseArray(unexpectedElements), parseArray(actualArray));
+    }
+
+    /**
+     * Verifies if an actual {@link JsonArray} contains none of
+     * unexpected elements.
+     *
+     * @param unexpectedElements The json array string of unexpected elements
+     * @param actualArray The actual {@link JsonArray}
+     */
+    public static void assertContainsNone(
+            String unexpectedElements, JsonArray actualArray) {
+        assertContainsNone(parseArray(unexpectedElements), actualArray);
+    }
+
+    /**
+     * Verifies if an actual json array string contains none of
+     * unexpected elements.
+     *
+     * @param unexpectedElements The {@link JsonArray} of unexpected elements
+     * @param actualArray The actual json array string
+     */
+    public static void assertContainsNone(
+            JsonArray unexpectedElements, String actualArray) {
+        assertContainsNone(unexpectedElements, parseArray(actualArray));
+    }
+
+    /**
+     * Whether a {@link JsonArray} contains a specified
      * {@link JsonValue} element.
      *
-     * @param element The specified{@link JsonValue} element
+     * @param element The specified {@link JsonValue} element
      * @param array The {@link JsonArray}
      *
      * @return {@code true} if contains
@@ -539,5 +595,11 @@ public class AssertJson {
             JsonArray expectedElements, JsonArray actualArray) {
         throw new AssertionFailedError(
                 NOT_CONTAINING_ANY.message(expectedElements, actualArray));
+    }
+
+    private static void failContainingSome(
+            List<JsonValue> containingElements, JsonArray actualArray) {
+        throw new AssertionFailedError(
+                CONTAINING_SOME.message(containingElements, actualArray));
     }
 }
