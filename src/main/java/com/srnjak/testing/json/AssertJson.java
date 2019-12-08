@@ -21,7 +21,8 @@ public class AssertJson {
         UNEXPECTED_EQUAL("Expected not equal but was: %s"),
         NOT_CONTAINING("The expected element: %s is not part of: %s"),
         CONTAINING("The element: %s is part of: %s, but is not expected."),
-        NOT_CONTAINING_ALL("Expected elements %s are missing in %s.");
+        NOT_CONTAINING_ALL("Expected elements %s are missing in %s"),
+        NOT_CONTAINING_ANY("Not found any of elements %s in the given %s");
 
         String message;
 
@@ -265,7 +266,7 @@ public class AssertJson {
     }
 
     /**
-     * Verifies if an actual {@link JsonArray} contain all elements
+     * Verifies if an actual {@link JsonArray} contains all elements
      * from {@link JsonArray} of expected elements.
      *
      * @param expectedElements The {@link JsonArray} of expected elements
@@ -281,13 +282,13 @@ public class AssertJson {
                                 .collect(Collectors.toList());
 
                     if (!missingList.isEmpty()) {
-                        failNotAllContaining(missingList, actualArray);
+                        failNotContainingAll(missingList, actualArray);
                     }
                 });
     }
 
     /**
-     * Verifies if an actual json array string contain all elements
+     * Verifies if an actual json array string contains all elements
      * from json array string of expected elements.
      *
      * @param expectedElements The json array string of expected elements
@@ -300,7 +301,7 @@ public class AssertJson {
     }
 
     /**
-     * Verifies if an actual {@link JsonArray} contain all elements
+     * Verifies if an actual {@link JsonArray} contains all elements
      * from json array string of expected elements.
      *
      * @param expectedElements The json array string of expected elements
@@ -321,6 +322,67 @@ public class AssertJson {
     public static void assertContainsAll(
             JsonArray expectedElements, String actualArray) {
         assertContainsAll(expectedElements, parseArray(actualArray));
+    }
+
+    /**
+     * Verifies if an actual {@link JsonArray} contains any of
+     * expected elements.
+     *
+     * @param expectedElements The {@link JsonArray} of expected elements
+     * @param actualArray The actual {@link JsonArray}
+     */
+    public static void assertContainsAny(
+            JsonArray expectedElements, JsonArray actualArray) {
+
+        Optional.ofNullable(expectedElements)
+                .filter(e -> !e.isEmpty())
+                .ifPresent(e -> {
+                    boolean found = e.stream()
+                            .anyMatch(exp -> contains(exp, actualArray));
+
+                    if (actualArray == null
+                            || actualArray.isEmpty()
+                            || !found) {
+                        failNotContainingAny(expectedElements, actualArray);
+                    }
+                });
+    }
+
+    /**
+     * Verifies if an actual json array string contains any of
+     * expected elements.
+     *
+     * @param expectedElements The json array string of expected elements
+     * @param actualArray The actual json array string
+     */
+    public static void assertContainsAny(
+            String expectedElements, String actualArray) {
+        assertContainsAny(
+                parseArray(expectedElements), parseArray(actualArray));
+    }
+
+    /**
+     * Verifies if an actual {@link JsonArray} contains any of
+     * expected elements.
+     *
+     * @param expectedElements The actual json array of expected elements
+     * @param actualArray The actual {@link JsonArray}
+     */
+    public static void assertContainsAny(
+            String expectedElements, JsonArray actualArray) {
+        assertContainsAny(parseArray(expectedElements), actualArray);
+    }
+
+    /**
+     * Verifies if an actual actual json array contains any of
+     * expected elements.
+     *
+     * @param expectedElements The {@link JsonArray} of expected elements
+     * @param actualArray The actual actual json array
+     */
+    public static void assertContainsAny(
+            JsonArray expectedElements, String actualArray) {
+        assertContainsAny(expectedElements, parseArray(actualArray));
     }
 
     /**
@@ -467,9 +529,15 @@ public class AssertJson {
                 CONTAINING.message(unexpectedElement, actualArray));
     }
 
-    private static void failNotAllContaining(
+    private static void failNotContainingAll(
             List<JsonValue> missingElements, JsonArray actualArray) {
         throw new AssertionFailedError(
                 NOT_CONTAINING_ALL.message(missingElements, actualArray));
+    }
+
+    private static void failNotContainingAny(
+            JsonArray expectedElements, JsonArray actualArray) {
+        throw new AssertionFailedError(
+                NOT_CONTAINING_ANY.message(expectedElements, actualArray));
     }
 }

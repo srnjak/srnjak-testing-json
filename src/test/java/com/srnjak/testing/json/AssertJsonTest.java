@@ -551,7 +551,7 @@ class AssertJsonTest {
     }
 
     @Test
-    public void containingAll_WhenNull() {
+    public void containingSet_WhenNull() {
 
         JsonArray arrayEmpty = Json.createArrayBuilder().build();
         JsonArray arrayNull =
@@ -560,16 +560,25 @@ class AssertJsonTest {
         JsonArray arrayObjects = Generators.generateJsonArrayOfObjects();
         JsonArray arrayArrays = Generators.generateJsonArrayOfArrays();
 
+        // contains all
         passContainsAll(null, null);
         passContainsAll(null, arrayEmpty);
         passContainsAll(null, arrayNull);
         passContainsAll(null, arrayScalars);
         passContainsAll(null, arrayObjects);
         passContainsAll(null, arrayArrays);
+
+        // contains any
+        passContainsAny(null, null);
+        passContainsAny(null, arrayEmpty);
+        passContainsAny(null, arrayNull);
+        passContainsAny(null, arrayScalars);
+        passContainsAny(null, arrayObjects);
+        passContainsAny(null, arrayArrays);
     }
 
     @Test
-    public void containingAll_WhenEmpty() {
+    public void containingSet_WhenEmpty() {
 
         JsonArray arrayEmpty = Json.createArrayBuilder().build();
         JsonArray arrayNull =
@@ -578,16 +587,25 @@ class AssertJsonTest {
         JsonArray arrayObjects = Generators.generateJsonArrayOfObjects();
         JsonArray arrayArrays = Generators.generateJsonArrayOfArrays();
 
+        // contains all
         passContainsAll(arrayEmpty, null);
         passContainsAll(arrayEmpty, arrayEmpty);
         passContainsAll(arrayEmpty, arrayNull);
         passContainsAll(arrayEmpty, arrayScalars);
         passContainsAll(arrayEmpty, arrayObjects);
         passContainsAll(arrayEmpty, arrayArrays);
+
+        // contains any
+        passContainsAny(arrayEmpty, null);
+        passContainsAny(arrayEmpty, arrayEmpty);
+        passContainsAny(arrayEmpty, arrayNull);
+        passContainsAny(arrayEmpty, arrayScalars);
+        passContainsAny(arrayEmpty, arrayObjects);
+        passContainsAny(arrayEmpty, arrayArrays);
     }
 
     @Test
-    public void containingAll_WhenNotEmpty() {
+    public void containingSet_WhenNotEmpty() {
 
         JsonObject obj = Json.createObjectBuilder().add("a", "x").build();
         JsonArray arr = Json.createArrayBuilder().add("el").build();
@@ -596,7 +614,7 @@ class AssertJsonTest {
                 .add(JsonValue.NULL)
                 .add(true)
                 .add(2)
-                .add("three")
+                .add("aa")
                 .add(obj)
                 .add(arr)
                 .build();
@@ -617,29 +635,46 @@ class AssertJsonTest {
                 Json.createArrayBuilder(expectedElements).remove(5).build();
         JsonArray arrayMore =
                 Json.createArrayBuilder(expectedElements).add("xxx").build();
+        JsonArray arrayDifferent = Json.createArrayBuilder()
+                .add(false)
+                .add(-1)
+                .add("notHere")
+                .build();
 
+        // contains all
         failContainsAll(expectedElements, null,
                 new ArrayList<>(expectedElements));
         failContainsAll(expectedElements, arrayEmpty,
                 new ArrayList<>(expectedElements));
         passContainsAll(expectedElements, arraySame);
         failContainsAll(expectedElements, arrayLess,
-                Stream.of(JsonValue.NULL).collect(
-                        Collectors.toList()));
+                Stream.of(JsonValue.NULL).collect(Collectors.toList()));
         failContainsAll(expectedElements, arrayLess1,
-                Stream.of(JsonValue.TRUE).collect(
-                        Collectors.toList()));
+                Stream.of(JsonValue.TRUE).collect(Collectors.toList()));
         failContainsAll(expectedElements, arrayLess2,
-                Stream.of(Json.createValue(2)).collect(
-                        Collectors.toList()));
+                Stream.of(Json.createValue(2)).collect(Collectors.toList()));
         failContainsAll(expectedElements, arrayLess3,
-                Stream.of(Json.createValue("three")).collect(
-                        Collectors.toList()));
+                Stream.of(Json.createValue("aa")).collect(Collectors.toList()));
         failContainsAll(expectedElements, arrayLess4,
                 Stream.of(obj).collect(Collectors.toList()));
         failContainsAll(expectedElements, arrayLess5,
                 Stream.of(arr).collect(Collectors.toList()));
         passContainsAll(expectedElements, arrayMore);
+        failContainsAll(expectedElements, arrayDifferent,
+                new ArrayList<>(expectedElements));
+
+        // contains any
+        failContainsAny(expectedElements, null);
+        failContainsAny(expectedElements, arrayEmpty);
+        passContainsAny(expectedElements, arraySame);
+        passContainsAny(expectedElements, arrayLess);
+        passContainsAny(expectedElements, arrayLess1);
+        passContainsAny(expectedElements, arrayLess2);
+        passContainsAny(expectedElements, arrayLess3);
+        passContainsAny(expectedElements, arrayLess4);
+        passContainsAny(expectedElements, arrayLess5);
+        passContainsAny(expectedElements, arrayMore);
+        failContainsAny(expectedElements, arrayDifferent);
     }
 
     private void passEquals(JsonStructure expected, JsonStructure actual) {
@@ -681,6 +716,15 @@ class AssertJsonTest {
                 stringOf(expectedElements), stringOf(actualArray));
         AssertJson.assertContainsAll(stringOf(expectedElements), actualArray);
         AssertJson.assertContainsAll(expectedElements, stringOf(actualArray));
+    }
+
+    private void passContainsAny(
+            JsonArray expectedElements, JsonArray actualArray) {
+        AssertJson.assertContainsAny(expectedElements, actualArray);
+        AssertJson.assertContainsAny(
+                stringOf(expectedElements), stringOf(actualArray));
+        AssertJson.assertContainsAny(stringOf(expectedElements), actualArray);
+        AssertJson.assertContainsAny(expectedElements, stringOf(actualArray));
     }
 
     private void failEquals(
@@ -909,6 +953,39 @@ class AssertJsonTest {
 
         String expectedMessage =
                 NOT_CONTAINING_ALL.message(missingElements, actualArray);
+
+        verifyFailure(e1, expectedMessage);
+        verifyFailure(e2, expectedMessage);
+        verifyFailure(e3, expectedMessage);
+        verifyFailure(e4, expectedMessage);
+    }
+
+    private void failContainsAny(
+            JsonArray expectedElements,
+            JsonArray actualArray) {
+
+        AssertionFailedError e1 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsAny(
+                        expectedElements, actualArray));
+
+        AssertionFailedError e2 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsAny(
+                        stringOf(expectedElements), stringOf(actualArray)));
+
+        AssertionFailedError e3 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsAny(
+                        stringOf(expectedElements), actualArray));
+
+        AssertionFailedError e4 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsAny(
+                        expectedElements, stringOf(actualArray)));
+
+        String expectedMessage =
+                NOT_CONTAINING_ANY.message(expectedElements, actualArray);
 
         verifyFailure(e1, expectedMessage);
         verifyFailure(e2, expectedMessage);
