@@ -733,6 +733,7 @@ class AssertJsonTest {
         runnableMap.get(type).run();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void failEquals(
             JsonStructure expected,
             JsonStructure actual,

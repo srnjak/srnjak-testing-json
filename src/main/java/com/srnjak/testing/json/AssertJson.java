@@ -34,8 +34,10 @@ public class AssertJson {
             String[] strParams = Arrays.stream(params)
                     .map(String::valueOf)
                     .toArray(String[]::new);
-
-            return String.format(message, (Object[]) strParams);
+            
+            @SuppressWarnings("RedundantCast")
+            String format = String.format(message, (Object[]) strParams);
+            return format;
         }
     }
 
