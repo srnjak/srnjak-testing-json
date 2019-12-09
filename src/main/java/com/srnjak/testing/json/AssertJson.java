@@ -23,7 +23,9 @@ public class AssertJson {
         CONTAINING("The element: %s is part of: %s, but is not expected."),
         NOT_CONTAINING_ALL("Expected elements %s are missing in %s"),
         NOT_CONTAINING_ANY("Not found any of elements %s in the given %s"),
-        CONTAINING_SOME("Found %s in the given %s, but none of them expected.");
+        CONTAINING_SOME("Found %s in the given %s, but none of them expected."),
+        UNEXPECTED_PROPERTY(
+                "The property %s was found on path %s, but is not expected.");
 
         String message;
 
@@ -480,9 +482,12 @@ public class AssertJson {
      * @param expectedValue The expected json value
      * @param path The path
      * @param actual The actual json string
+     *
+     * @throws NullPointerException If path is null
      */
     public static void assertContainsProperty(
-            String expectedValue, String path, String actual) {
+            String expectedValue, String path, String actual)
+            throws NullPointerException {
         assertContainsProperty(parseValue(expectedValue), path, parse(actual));
     }
 
@@ -493,9 +498,12 @@ public class AssertJson {
      * @param expectedValue The expected json value
      * @param path The path
      * @param actual The actual {@link JsonStructure}
+     *
+     * @throws NullPointerException If path is null
      */
     public static void assertContainsProperty(
-            String expectedValue, String path, JsonStructure actual) {
+            String expectedValue, String path, JsonStructure actual)
+            throws NullPointerException {
         assertContainsProperty(parseValue(expectedValue), path, actual);
     }
 
@@ -506,10 +514,93 @@ public class AssertJson {
      * @param expectedValue The expected {@link JsonValue}
      * @param path The path
      * @param actual The actual json string
+     *
+     * @throws NullPointerException If path is null
      */
     public static void assertContainsProperty(
-            JsonValue expectedValue, String path, String actual) {
+            JsonValue expectedValue, String path, String actual)
+            throws NullPointerException {
         assertContainsProperty(expectedValue, path, parse(actual));
+    }
+
+    /**
+     * Verifies if an actual {@link JsonStructure} does not contains unexpected
+     * {@link JsonValue} on specified path.
+     *
+     * @param unexpectedValue The unexpected {@link JsonValue}
+     * @param path The path
+     * @param actual The actual {@link JsonStructure}
+     *
+     * @throws NullPointerException If path is null
+     */
+    public static void assertNotContainsProperty(
+            JsonValue unexpectedValue, String path, JsonStructure actual)
+            throws NullPointerException {
+
+        JsonValue unexpectedV = Optional.ofNullable(unexpectedValue)
+                .orElse(JsonValue.NULL);
+
+        JsonPointer pointer = Optional.of(path)
+                .map(Json::createPointer)
+                .get();
+
+        Optional.ofNullable(actual)
+                .filter(pointer::containsValue)
+                .map(pointer::getValue)
+                .flatMap(v -> Optional.of(v)
+                        .filter(v1 -> equals(unexpectedV, v1)))
+                .ifPresent(v1 -> failUnexpectedProperty(v1, path));
+    }
+
+    /**
+     * Verifies if an actual json string does not contains unexpected
+     * json value on specified path.
+     *
+     * @param unexpectedValue The unexpected json value
+     * @param path The path
+     * @param actual The actual json string
+     *
+     * @throws NullPointerException If path is null
+     */
+    public static void assertNotContainsProperty(
+            String unexpectedValue, String path, String actual)
+            throws NullPointerException {
+        assertNotContainsProperty(
+                parseValue(unexpectedValue), path, parse(actual));
+    }
+
+    /**
+     * Verifies if an actual {@link JsonStructure} does not contains unexpected
+     * json value on specified path.
+     *
+     * @param unexpectedValue The unexpected json value
+     * @param path The path
+     * @param actual The actual {@link JsonStructure}
+     *
+     * @throws NullPointerException If path is null
+     */
+    public static void assertNotContainsProperty(
+            String unexpectedValue, String path, JsonStructure actual)
+            throws NullPointerException {
+        assertNotContainsProperty(
+                parseValue(unexpectedValue), path, actual);
+    }
+
+    /**
+     * Verifies if an actual json string does not contains unexpected
+     * {@link JsonValue} on specified path.
+     *
+     * @param unexpectedValue The unexpected {@link JsonValue}
+     * @param path The path
+     * @param actual The actual json string
+     *
+     * @throws NullPointerException If path is null
+     */
+    public static void assertNotContainsProperty(
+            JsonValue unexpectedValue, String path, String actual)
+            throws NullPointerException {
+        assertNotContainsProperty(
+                unexpectedValue, path, parse(actual));
     }
 
     /**
@@ -686,5 +777,11 @@ public class AssertJson {
             List<JsonValue> containingElements, JsonArray actualArray) {
         throw new AssertionFailedError(
                 CONTAINING_SOME.message(containingElements, actualArray));
+    }
+
+    private static void failUnexpectedProperty(
+            JsonValue unexpectedValue, String path) {
+        throw new AssertionFailedError(
+                UNEXPECTED_PROPERTY.message(unexpectedValue, path));
     }
 }
