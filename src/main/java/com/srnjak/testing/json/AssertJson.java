@@ -442,6 +442,77 @@ public class AssertJson {
     }
 
     /**
+     * Verifies if an actual {@link JsonStructure} contains expected
+     * {@link JsonValue} on specified path.
+     *
+     * @param expectedValue The expected {@link JsonValue}
+     * @param path The path
+     * @param actual The actual {@link JsonStructure}
+     *
+     * @throws NullPointerException If path is null
+     */
+    public static void assertContainsProperty(
+            JsonValue expectedValue, String path, JsonStructure actual)
+            throws NullPointerException {
+
+        JsonValue expectedV = Optional.ofNullable(expectedValue)
+                .orElse(JsonValue.NULL);
+
+        JsonPointer pointer = Optional.of(path)
+                .map(Json::createPointer)
+                .get();
+
+        Optional.ofNullable(actual)
+                .filter(pointer::containsValue)
+                .map(pointer::getValue)
+                .ifPresentOrElse(
+                        v -> Optional.of(v)
+                                .filter(v1 -> !equals(expectedV, v1))
+                                .ifPresent(v1 -> failInvalid(
+                                        path, expectedV, v1)),
+                        () -> failMissing(path));
+    }
+
+    /**
+     * Verifies if an actual json string contains expected
+     * json value on specified path.
+     *
+     * @param expectedValue The expected json value
+     * @param path The path
+     * @param actual The actual json string
+     */
+    public static void assertContainsProperty(
+            String expectedValue, String path, String actual) {
+        assertContainsProperty(parseValue(expectedValue), path, parse(actual));
+    }
+
+    /**
+     * Verifies if an actual {@link JsonStructure} contains expected
+     * json value on specified path.
+     *
+     * @param expectedValue The expected json value
+     * @param path The path
+     * @param actual The actual {@link JsonStructure}
+     */
+    public static void assertContainsProperty(
+            String expectedValue, String path, JsonStructure actual) {
+        assertContainsProperty(parseValue(expectedValue), path, actual);
+    }
+
+    /**
+     * Verifies if an actual json string contains expected
+     * {@link JsonValue} on specified path.
+     *
+     * @param expectedValue The expected {@link JsonValue}
+     * @param path The path
+     * @param actual The actual json string
+     */
+    public static void assertContainsProperty(
+            JsonValue expectedValue, String path, String actual) {
+        assertContainsProperty(expectedValue, path, parse(actual));
+    }
+
+    /**
      * Whether a {@link JsonArray} contains a specified
      * {@link JsonValue} element.
      *
@@ -537,11 +608,19 @@ public class AssertJson {
     }
 
     private static void failInvalid(
-            JsonObject diff, JsonStructure expected, JsonStructure actual) {
-        JsonPointer pointer = Json.createPointer(DiffParser.getPath(diff));
-
+            String path, JsonValue expected, JsonValue actual) {
         throw new AssertionFailedError(
-                INVALID.message(DiffParser.getPath(diff)),
+                INVALID.message(path),
+                expected,
+                actual);
+    }
+
+    private static void failInvalid(
+            JsonObject diff, JsonStructure expected, JsonStructure actual) {
+
+        JsonPointer pointer = Json.createPointer(DiffParser.getPath(diff));
+        failInvalid(
+                DiffParser.getPath(diff),
                 pointer.getValue(expected),
                 pointer.getValue(actual));
     }
@@ -555,14 +634,20 @@ public class AssertJson {
         throw new AssertionFailedError(NOT_NULL.message(), null, actual);
     }
 
+    private static void failUnexpected(String path) {
+        throw new AssertionFailedError(UNEXPECTED.message(path));
+    }
+
     private static void failUnexpected(JsonObject diff) {
-        throw new AssertionFailedError(
-                UNEXPECTED.message(DiffParser.getPath(diff)));
+        failUnexpected(DiffParser.getPath(diff));
+    }
+
+    private static void failMissing(String path) {
+        throw new AssertionFailedError(MISSING.message(path));
     }
 
     private static void failMissing(JsonObject diff) {
-        throw new AssertionFailedError(
-                MISSING.message(DiffParser.getPath(diff)));
+        failMissing(DiffParser.getPath(diff));
     }
 
     private static void failUnknown(JsonObject diff) {

@@ -745,6 +745,193 @@ class AssertJsonTest {
         passContainsNone(elements, arrayDifferent);
     }
 
+    @Test
+    public void containingProperty_WhenNull() {
+
+        JsonObject objectEmbedded = Json.createObjectBuilder()
+                .add("one", 1)
+                .add("two", 2)
+                .add("three", 3)
+                .build();
+        JsonArray arrayEmbedded = Json.createArrayBuilder()
+                .add(1).add(2).add(3).build();
+
+        JsonObject objectEmpty = Json.createObjectBuilder().build();
+        JsonObject objectNull = Json.createObjectBuilder()
+                .add("a", JsonValue.NULL)
+                .build();
+        JsonObject object1 = Json.createObjectBuilder()
+                .add("a", 1)
+                .add("b", "x")
+                .add("c", true)
+                .add("d", objectEmbedded)
+                .add("e", arrayEmbedded)
+                .build();
+
+        JsonArray arrayEmpty = Json.createArrayBuilder().build();
+        JsonArray arrayNull = Json.createArrayBuilder()
+                .add(JsonValue.NULL)
+                .build();
+        JsonArray arrayObjects = Json.createArrayBuilder()
+                .add(objectEmbedded)
+                .build();
+        JsonArray arrayObjectNull = Json.createArrayBuilder()
+                .add(objectNull)
+                .build();
+
+        failContainsProperty(null, "/a", null, null, MISSING);
+        failContainsProperty(null, "/a", objectEmpty, null, MISSING);
+        passContainsProperty(null, "/a", objectNull);
+        failContainsProperty(null, "/a", object1, 1, INVALID);
+
+        failContainsProperty(null, "/0", arrayEmpty, null, MISSING);
+        passContainsProperty(null, "/0", arrayNull);
+        failContainsProperty(null, "/0", arrayObjects, objectEmbedded, INVALID);
+        passContainsProperty(null, "/0/a", arrayObjectNull);
+    }
+
+    @Test
+    public void containingProperty_WhenScalar() {
+
+        JsonValue expected = Json.createValue(1);
+        JsonValue unexpected = Json.createValue(2);
+
+        JsonObject objectEmbedded = Json.createObjectBuilder()
+                .add("one", expected)
+                .add("two", unexpected)
+                .build();
+        JsonArray arrayEmbedded = Json.createArrayBuilder()
+                .add(1).add(2).add(3).build();
+
+        JsonObject objectEmpty = Json.createObjectBuilder().build();
+        JsonObject object1 = Json.createObjectBuilder()
+                .add("a", expected)
+                .add("b", unexpected)
+                .add("c", objectEmbedded)
+                .add("d", arrayEmbedded)
+                .build();
+
+        JsonArray arrayEmpty = Json.createArrayBuilder().build();
+        JsonArray arrayScalar = Json.createArrayBuilder()
+                .add(expected)
+                .add(unexpected)
+                .build();
+        JsonArray arrayObjects = Json.createArrayBuilder()
+                .add(objectEmbedded)
+                .build();
+
+        failContainsProperty(expected, "/a", null, null, MISSING);
+        failContainsProperty(expected, "/a", objectEmpty, null, MISSING);
+        passContainsProperty(expected, "/a", object1);
+        failContainsProperty(expected, "/b", object1, unexpected, INVALID);
+        passContainsProperty(expected, "/c/one", object1);
+        failContainsProperty(expected, "/c/two", object1, unexpected, INVALID);
+        failContainsProperty(expected, "/c/xxx", object1, null, MISSING);
+
+        failContainsProperty(expected, "/0", arrayEmpty, null, MISSING);
+        passContainsProperty(expected, "/0", arrayScalar);
+        failContainsProperty(expected, "/1", arrayScalar, unexpected, INVALID);
+        passContainsProperty(expected, "/0/one", arrayObjects);
+        failContainsProperty(
+                expected, "/0/two", arrayObjects, unexpected, INVALID);
+    }
+
+    @Test
+    public void containingProperty_WhenObject() {
+
+        JsonValue expected = Json.createObjectBuilder()
+                .add("x", 1)
+                .add("y", 2)
+                .build();
+        JsonValue unexpected = Json.createObjectBuilder()
+                .add("x", 1)
+                .add("y", -1)
+                .build();
+
+        JsonObject objectEmbedded = Json.createObjectBuilder()
+                .add("one", expected)
+                .add("two", unexpected)
+                .build();
+        JsonArray arrayEmbedded = Json.createArrayBuilder()
+                .add(1).add(2).add(3).build();
+
+        JsonObject objectEmpty = Json.createObjectBuilder().build();
+        JsonObject object1 = Json.createObjectBuilder()
+                .add("a", expected)
+                .add("b", unexpected)
+                .add("c", objectEmbedded)
+                .add("d", arrayEmbedded)
+                .build();
+
+        JsonArray arrayEmpty = Json.createArrayBuilder().build();
+        JsonArray arrayNotEmpty = Json.createArrayBuilder()
+                .add(expected)
+                .add(unexpected)
+                .add(objectEmbedded)
+                .build();
+
+        failContainsProperty(expected, "/a", null, null, MISSING);
+        failContainsProperty(expected, "/a", objectEmpty, null, MISSING);
+        passContainsProperty(expected, "/a", object1);
+        failContainsProperty(expected, "/b", object1, unexpected, INVALID);
+        passContainsProperty(expected, "/c/one", object1);
+        failContainsProperty(expected, "/c/two", object1, unexpected, INVALID);
+        failContainsProperty(expected, "/c/xxx", object1, null, MISSING);
+
+        failContainsProperty(expected, "/0", arrayEmpty, null, MISSING);
+        passContainsProperty(expected, "/0", arrayNotEmpty);
+        failContainsProperty(expected, "/1", arrayNotEmpty, unexpected, INVALID);
+        passContainsProperty(expected, "/2/one", arrayNotEmpty);
+        failContainsProperty(
+                expected, "/2/two", arrayNotEmpty, unexpected, INVALID);
+    }
+
+    @Test
+    public void containingProperty_WhenArray() {
+        JsonArray expected = Json.createArrayBuilder()
+                .add("x").add("y").build();
+        JsonArray unexpected = Json.createArrayBuilder()
+                .add("x").add("z").build();
+
+        JsonObject objectEmbedded = Json.createObjectBuilder()
+                .add("one", expected)
+                .add("two", unexpected)
+                .build();
+        JsonArray arrayEmbedded = Json.createArrayBuilder()
+                .add(1).add(2).add(3).build();
+
+        JsonObject objectEmpty = Json.createObjectBuilder().build();
+        JsonObject object1 = Json.createObjectBuilder()
+                .add("a", expected)
+                .add("b", unexpected)
+                .add("c", objectEmbedded)
+                .add("d", arrayEmbedded)
+                .build();
+
+        JsonArray arrayEmpty = Json.createArrayBuilder().build();
+        JsonArray arrayNotEmpty = Json.createArrayBuilder()
+                .add(expected)
+                .add(unexpected)
+                .add(objectEmbedded)
+                .build();
+
+        failContainsProperty(expected, "/a", null, null, MISSING);
+        failContainsProperty(expected, "/a", objectEmpty, null, MISSING);
+        passContainsProperty(expected, "/a", object1);
+        failContainsProperty(expected, "/b", object1, unexpected, INVALID);
+        passContainsProperty(expected, "/c/one", object1);
+        failContainsProperty(expected, "/c/two", object1, unexpected, INVALID);
+        failContainsProperty(expected, "/c/xxx", object1, null, MISSING);
+
+        failContainsProperty(expected, "/0", arrayEmpty, null, MISSING);
+        passContainsProperty(expected, "/0", arrayNotEmpty);
+        failContainsProperty(
+                expected, "/1", arrayNotEmpty, unexpected, INVALID);
+        passContainsProperty(expected, "/2/one", arrayNotEmpty);
+        failContainsProperty(
+                expected, "/2/two", arrayNotEmpty, unexpected, INVALID);
+    }
+
     private void passEquals(JsonStructure expected, JsonStructure actual) {
         AssertJson.assertEquals(expected, actual);
         AssertJson.assertEquals(stringOf(expected), stringOf(actual));
@@ -806,6 +993,15 @@ class AssertJsonTest {
                 unexpectedElements, stringOf(actualArray));
     }
 
+    private void passContainsProperty(
+            JsonValue expected, String path, JsonStructure actual) {
+        AssertJson.assertContainsProperty(expected, path, actual);
+        AssertJson.assertContainsProperty(
+                stringOf(expected), path, stringOf(actual));
+        AssertJson.assertContainsProperty(stringOf(expected), path, actual);
+        AssertJson.assertContainsProperty(expected, path, stringOf(actual));
+    }
+
     private void failEquals(
             JsonStructure expected,
             JsonStructure actual,
@@ -824,31 +1020,31 @@ class AssertJsonTest {
                         true));
 
         runnableMap.put(
-                AssertJson.FailureType.NOT_NULL,
+                NOT_NULL,
                 () -> failEquals(
                         expected,
                         actual,
-                        AssertJson.FailureType.NOT_NULL.message(),
+                        NOT_NULL.message(),
                         null,
                         actual,
                         true));
 
         runnableMap.put(
-                AssertJson.FailureType.UNEXPECTED,
+                UNEXPECTED,
                 () -> failEquals(
                         expected,
                         actual,
-                        AssertJson.FailureType.UNEXPECTED.message(path),
+                        UNEXPECTED.message(path),
                         null,
                         null,
                         false));
 
         runnableMap.put(
-                AssertJson.FailureType.MISSING,
+                MISSING,
                 () -> failEquals(
                         expected,
                         actual,
-                        AssertJson.FailureType.MISSING.message(path),
+                        MISSING.message(path),
                         null,
                         null,
                         false));
@@ -1106,6 +1302,48 @@ class AssertJsonTest {
         verifyFailure(e4, expectedMessage);
     }
 
+    private void failContainsProperty(
+            JsonValue expectedValue,
+            String path,
+            JsonStructure actual,
+            Object actualValue,
+            AssertJson.FailureType type) {
+
+        AssertionFailedError e1 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsProperty(
+                        expectedValue, path, actual));
+
+        AssertionFailedError e2 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsProperty(
+                        stringOf(expectedValue), path, stringOf(actual)));
+
+        AssertionFailedError e3 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsProperty(
+                        stringOf(expectedValue), path, actual));
+
+        AssertionFailedError e4 = assertThrows(
+                AssertionFailedError.class,
+                () -> AssertJson.assertContainsProperty(
+                        expectedValue, path, stringOf(actual)));
+
+        String expectedMessage = type.message(path);
+
+        if (INVALID.equals(type)) {
+            verifyFailure(e1, expectedMessage, expectedValue, actualValue);
+            verifyFailure(e2, expectedMessage, expectedValue, actualValue);
+            verifyFailure(e3, expectedMessage, expectedValue, actualValue);
+            verifyFailure(e4, expectedMessage, expectedValue, actualValue);
+        } else {
+            verifyFailure(e1, expectedMessage);
+            verifyFailure(e2, expectedMessage);
+            verifyFailure(e3, expectedMessage);
+            verifyFailure(e4, expectedMessage);
+        }
+    }
+
     private void verifyFailure(
             AssertionFailedError e,
             String expectedMessage,
@@ -1113,6 +1351,10 @@ class AssertJsonTest {
             Object actualValue) {
 
         System.out.println(e.getMessage());
+        System.out.println("\texpected:" +
+                e.getExpected().getStringRepresentation());
+        System.out.println("\tactual:" +
+                e.getActual().getStringRepresentation());
 
         assertEquals(expectedMessage, e.getMessage());
         assertEquals(
