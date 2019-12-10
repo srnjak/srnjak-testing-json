@@ -20,6 +20,14 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <name>Grega Krajnc</name>
+            <email>grega.krajnc@srnjak.com</email>
+            <url>https://github.com/srnjak</url>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:git@github.com:srnjak/srnjak-testing-json.git</connection>
         <developerConnection>scm:git:git@github.com:srnjak/srnjak-testing-json.git</developerConnection>
