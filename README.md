@@ -10,12 +10,13 @@ Use maven for build the source:
     mvn clean install
     
 ## Usage
-After build, include test dependency into your maven project:
+Released version of library is available at Maven Central. 
+Include it into your project's `pom.xml` as a test dependency using the following coordinates (do not forget to specify the desired version):
 
     <dependency>
         <groupId>com.srnjak</groupId>
         <artifactId>srnjak-testing-json</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.1</version>
         <scope>test</scope>
     </dependency>
      
