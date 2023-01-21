@@ -2,7 +2,7 @@ package com.srnjak.testing.json;
 
 import org.opentest4j.AssertionFailedError;
 
-import javax.json.*;
+import jakarta.json.*;
 import java.io.StringReader;
 import java.util.*;
 import java.util.function.Consumer;

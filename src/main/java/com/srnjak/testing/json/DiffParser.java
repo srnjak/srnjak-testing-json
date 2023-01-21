@@ -1,7 +1,7 @@
 package com.srnjak.testing.json;
 
-import javax.json.JsonObject;
-import javax.json.JsonPatch;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonPatch;
 
 public class DiffParser {
 

@@ -6,11 +6,11 @@
 
     <groupId>com.srnjak</groupId>
     <artifactId>srnjak-testing-json</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>srnjak-testing-json</name>
-    <description>Testing utility for Json using javax.json</description>
+    <description>Testing utility for Json using jakarta.json</description>
     <url>https://github.com/srnjak/srnjak-testing-json</url>
 
     <licenses>
@@ -53,9 +53,9 @@
 
         <!-- Core -->
         <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
-            <version>1.1.4</version>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <version>2.1.1</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
@@ -68,9 +68,9 @@
 
         <!-- Test dependencies -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.1.4</version>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
 
@@ -131,8 +131,9 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-scm-plugin</artifactId>
-                <version>1.11.1</version>
+                <version>1.13.0</version>
                 <configuration>
                     <tag>v${project.version}</tag>
                 </configuration>

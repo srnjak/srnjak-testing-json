@@ -3,7 +3,7 @@ package com.srnjak.testing.json;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
-import javax.json.*;
+import jakarta.json.*;
 
 import java.util.*;
 import java.util.stream.Collectors;

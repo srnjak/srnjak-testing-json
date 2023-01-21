@@ -1,6 +1,6 @@
 # Srnjak JSON test
 
-Java utility for writing JSON tests. It supports standard json representations from `javax.json` package as well as string representation or any combinations between them.
+Java utility for writing JSON tests. It supports standard json representations from `jakarta.json` package as well as string representation or any combinations between them.
 
 Supports testing framework [JUnit 5](https://junit.org/junit5/).
 
@@ -16,7 +16,7 @@ Include it into your project's `pom.xml` as a test dependency using the followin
     <dependency>
         <groupId>com.srnjak</groupId>
         <artifactId>srnjak-testing-json</artifactId>
-        <version>1.0.1</version>
+        <version>2.0.0</version>
         <scope>test</scope>
     </dependency>
      
