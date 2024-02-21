@@ -70,7 +70,16 @@
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.3</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Override the transitive dependency from yasson because of CVE-2023-4043 -->
+        <!-- https://devhub.checkmarx.com/cve-details/CVE-2023-4043/ -->
+        <dependency>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
+            <version>1.1.5</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
