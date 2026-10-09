@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /root/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -34,7 +34,7 @@ jobs:
         run: mvn -B package -s mvn-settings.xml
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: packaged-jars
           path: target/*.jar
@@ -48,7 +48,7 @@ jobs:
       image: srnjak/ci-builder-maven:3.9.6-jdk21-9
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up environment variables
         run: |
@@ -74,7 +74,7 @@ jobs:
       image: srnjak/ci-builder-maven:3.9.6-jdk21-9
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Ensures full history for tagging
 
@@ -127,7 +127,7 @@ jobs:
       image: srnjak/ci-builder-maven:3.9.6-jdk21-9
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: develop
           fetch-depth: 0  # Fetches all history for all branches and tags
