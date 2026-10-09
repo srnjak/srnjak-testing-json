@@ -1,0 +1,20 @@
+version: 2
+
+updates:
+  # Version updates open against develop, the branch features are merged
+  # into. Security updates ignore target-branch and always go to the
+  # default branch, master; that cannot be redirected.
+  - package-ecosystem: maven
+    directory: "/"
+    target-branch: develop
+    schedule:
+      interval: weekly
+
+  # The workflows pin their actions by major tag, which does not move
+  # across majors: v4 sat on the deprecated Node 20 runtime until it was
+  # noticed by hand. This keeps that from happening again.
+  - package-ecosystem: github-actions
+    directory: "/"
+    target-branch: develop
+    schedule:
+      interval: weekly
